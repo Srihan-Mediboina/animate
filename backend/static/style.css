@@ -1,91 +1,253 @@
-.full-body-container{
-    position: absolute;
-    top:0;
-    left:0;
-    right:0;
-    bottom:0;
-    width:100%;
-    height:100%;
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Open Sans', sans-serif;
+    background-color: #f5f5f5;
+}
+
+.full-body-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.top-text {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.title {
+    font-family: 'Kanit', sans-serif;
+    color: #2c3e50;
+    font-size: 2.5em;
+    margin-bottom: 30px;
+}
+
+.search-container {
+    position: relative;
+    max-width: 600px;
+    margin: 0 auto;
     display: flex;
-    justify-content: start;
+    gap: 10px;
+    align-items: flex-start;
+}
+
+.input-box {
+    flex: 1;
+    display: flex;
     align-items: center;
+    background: white;
+    border-radius: 30px;
+    padding: 10px 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.input-box img {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+}
+
+.input-box input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 16px;
+    padding: 5px;
+}
+
+.suggestions-box {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 5px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+}
+
+.suggestions-box:not(:empty) {
+    display: block;
+}
+
+.suggestion-item {
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.suggestion-item:hover {
+    background-color: #f0f0f0;
+}
+
+.search-button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    padding: 10px 25px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.search-button:hover {
+    background-color: #2980b9;
+}
+
+#answer-box {
+    display: flex;
     flex-direction: column;
+    gap: 20px;
+    margin-top: 20px;
 }
 
-#google-c{
-    color:#4285F4;
+.recommendation-card {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    transition: transform 0.2s;
 }
 
-#google-s{
-    color:#DB4437;
+.recommendation-card:hover {
+    transform: translateY(-5px);
 }
 
-#google-4{
-    color:	#F4B400;
+.anime-image {
+    flex-shrink: 0;
+    width: 200px;
+    height: 300px;
 }
 
-#google-3{
-    color:	#4285F4;
+.anime-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 5px;
 }
 
-#google-0-1{
-    color:	#0F9D58;
+.anime-info {
+    flex-grow: 1;
 }
 
-#google-0-2{
-    color:#DB4437;
+.anime-title {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+    color: #333;
 }
 
-.google-colors{
+.anime-rating,
+.anime-genres,
+.anime-episodes,
+.anime-studios,
+.anime-age-rating,
+.similarity-score {
+    margin: 8px 0;
+    color: #666;
+    font-size: 0.9em;
+}
+
+.anime-genres {
+    color: #4a90e2;
+    font-weight: 500;
+}
+
+.anime-rating {
+    color: #f39c12;
+    font-weight: 600;
+}
+
+.no-results {
+    text-align: center;
+    color: #7f8c8d;
+    font-size: 1.1em;
+    padding: 20px;
+}
+
+.error-message {
+    text-align: center;
+    color: #e74c3c;
+    font-size: 1.1em;
+    padding: 20px;
+}
+
+#google-c {
+    color: #4285F4;
+}
+
+#google-s {
+    color: #DB4437;
+}
+
+#google-4 {
+    color: #F4B400;
+}
+
+#google-3 {
+    color: #4285F4;
+}
+
+#google-0-1 {
+    color: #0F9D58;
+}
+
+#google-0-2 {
+    color: #DB4437;
+}
+
+.google-colors {
     display: flex;
     align-items: center;
     font-size: 48px;
     font-family: 'Open Sans', sans-serif;
 }
 
-.google-colors h1{
+.google-colors h1 {
     margin-bottom: 0;
     margin-right: 3px;
 }
 
-.input-box{
-    border-radius: 50px;
-    border:1px solid black;
-    display: flex;
-    align-items: center;
-    margin-top: 10px;
-    padding:12px;
-    width: 600px;
-}
-
-.input-box img{
-    height: 20px;
-    width:20px;
-}
-
-.top-text{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.input-box input{
-    width: 100%;
-    margin-left: 10px;
-    font-size: 16px;
-    border: none;
-    outline: 0;
-}
-
-#answer-box{
-    width: 700px;
-    margin-top:50px; 
-}
-
-.episode-title{
+.episode-title {
     font-family: 'Kanit', sans-serif;
 }
 
-.episode-desc{
+.episode-desc {
     font-family: 'Montserrat', sans-serif;
+}
+
+.anime-synopsis {
+    margin: 15px 0;
+    color: #444;
+    font-size: 0.95em;
+    line-height: 1.5;
+    max-height: 150px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.anime-synopsis::-webkit-scrollbar {
+    width: 6px;
+}
+
+.anime-synopsis::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.anime-synopsis::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.anime-synopsis::-webkit-scrollbar-thumb:hover {
+    background: #555;
 }

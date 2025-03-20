@@ -1,55 +1,123 @@
 <!doctype html>
-<title>{% block title %}{% endblock %} - Flaskr</title>
+<title>{% block title %}{% endblock %}</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Kanit&family=Montserrat&family=Open+Sans:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kanit&family=Montserrat&family=Open+Sans:wght@500&display=swap"
+    rel="stylesheet">
+
 <body>
     <div class="full-body-container">
         <div class="top-text">
-            <div class="google-colors">
-                <h1 id="google-4">4</h1>
-                <h1 id="google-3">3</h1>
-                <h1 id="google-0-1">0</h1>
-                <h1 id="google-0-2">0</h1>
-            </div>
-            <div class="input-box" onclick="sendFocus()">
-                <img src="{{ url_for('static', filename='images/mag.png') }}" />
-                <input placeholder="Search for a Keeping up with the Kardashians episode" id="filter-text-val" onkeyup="filterText()">
+            <h1 class="title">Anime Recommender</h1>
+            <div class="search-container">
+                <div class="input-box" onclick="sendFocus()">
+                    <img src="{{ url_for('static', filename='images/mag.png') }}" />
+                    <input placeholder="Enter an anime title" id="filter-text-val" onkeyup="filterText()"
+                        autocomplete="off">
+                </div>
+                <div id="suggestions-box" class="suggestions-box"></div>
+                <button id="search-button" class="search-button" onclick="searchAnime()">Search</button>
             </div>
         </div>
         <div id="answer-box">
-
         </div>
     </div>
 
     <script>
+        let selectedAnime = null;
 
-        function answerBoxTemplate(title,titleDesc,rating){
-            return `<div class=''>
-                <h3 class='episode-title'>${title}</h3>
-                <p class='episode-desc'>${titleDesc}</p>
-                <p class='episode-rating'>IMDB Rating: ${rating}</p>
-            </div>`
+        function answerBoxTemplate(anime) {
+            const imageUrl = anime['Image URL'] || 'https://via.placeholder.com/200x300?text=No+Image';
+            const cleanSynopsis = (anime.Synopsis || '').replace(/\\n/g, ' ').replace(/\\/g, '');
+            return `
+                <div class='recommendation-card'>
+                    <div class='anime-image'>
+                        <img src="${imageUrl}" alt="${anime.Name}" onerror="this.src='https://via.placeholder.com/200x300?text=No+Image'">
+                    </div>
+                    <div class='anime-info'>
+                        <h3 class='anime-title'>${anime.Name}</h3>
+                        <p class='anime-rating'>Rating: ${anime.Score || 'N/A'}</p>
+                        <p class='anime-genres'>Genres: ${anime.Genres || 'N/A'}</p>
+                        <p class='anime-episodes'>Episodes: ${anime.Episodes || 'N/A'}</p>
+                        <p class='anime-studios'>Studios: ${anime.Studios || 'N/A'}</p>
+                        <p class='anime-age-rating'>Age Rating: ${anime.Rating || 'N/A'}</p>
+                        <p class='anime-synopsis'>${cleanSynopsis || 'No synopsis available'}</p>
+                        <p class='similarity-score'>Similarity Score: ${anime.similarity ? anime.similarity.toFixed(3) : 'N/A'}</p>
+                    </div>
+                </div>`
         }
 
-        function sendFocus(){
-            document.getElementById('filter-text-val').focus()
+        function sendFocus() {
+            document.getElementById("filter-text-val").focus()
         }
 
-        function filterText(){
+        function filterText() {
+            const searchValue = document.getElementById("filter-text-val").value
+            if (searchValue.length < 2) {
+                document.getElementById("suggestions-box").innerHTML = ""
+                return
+            }
+
+            fetch("/suggestions?" + new URLSearchParams({ query: searchValue }).toString())
+                .then((response) => response.json())
+                .then((data) => {
+                    const suggestionsBox = document.getElementById("suggestions-box")
+                    suggestionsBox.innerHTML = ""
+                    data.forEach(name => {
+                        let div = document.createElement("div")
+                        div.className = "suggestion-item"
+                        div.innerHTML = name
+                        div.onclick = () => selectAnime(name)
+                        suggestionsBox.appendChild(div)
+                    })
+                })
+        }
+
+        function selectAnime(name) {
+            selectedAnime = name;
+            document.getElementById("filter-text-val").value = name;
+            document.getElementById("suggestions-box").innerHTML = "";
+        }
+
+        function searchAnime() {
+            if (!selectedAnime) {
+                alert("Please select an anime from the suggestions");
+                return;
+            }
+
             document.getElementById("answer-box").innerHTML = ""
-            console.log(document.getElementById("filter-text-val").value)
-            fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
-            .then((response) => response.json())
-            .then((data) => data.forEach(row => {
-                
-                let tempDiv = document.createElement("div")
-                tempDiv.innerHTML = answerBoxTemplate(row.title,row.descr,row.imdb_rating)
-                document.getElementById("answer-box").appendChild(tempDiv)
-            }));
-
+            fetch("/recommendations?" + new URLSearchParams({ title: selectedAnime }).toString())
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.length === 0) {
+                        document.getElementById("answer-box").innerHTML =
+                            "<p class='no-results'>No recommendations found. Try a different anime title.</p>"
+                        return
+                    }
+                    console.log("datad", data)
+                    data.forEach(anime => {
+                        let tempDiv = document.createElement("div")
+                        tempDiv.innerHTML = answerBoxTemplate(anime)
+                        document.getElementById("answer-box").appendChild(tempDiv)
+                    })
+                })
+                .catch(error => {
+                    console.error('Error:', error)
+                    document.getElementById("answer-box").innerHTML =
+                        "<p class='error-message'>An error occurred. Please try again.</p>"
+                });
         }
-            
+
+        // Close suggestions when clicking outside
+        document.addEventListener('click', function (event) {
+            const suggestionsBox = document.getElementById("suggestions-box")
+            const inputBox = document.querySelector(".input-box")
+            if (!inputBox.contains(event.target) && !suggestionsBox.contains(event.target)) {
+                suggestionsBox.innerHTML = ""
+            }
+        });
     </script>
 </body>
+
+</html>
