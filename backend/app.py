@@ -20,8 +20,8 @@ except Exception as e:
 app = Flask(__name__)
 CORS(app)
 
-# Initialize the anime recommender
-recommender = AnimeRecommender()
+# Initialize the anime recommender with the already loaded data
+recommender = AnimeRecommender(anime_data=anime_data)
 
 @app.route("/")
 def home():

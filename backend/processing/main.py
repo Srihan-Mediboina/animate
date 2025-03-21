@@ -22,9 +22,6 @@ data_loader = DataLoader()
 
 # Load all required data
 try:
-    # Load the main anime dataset containing all anime information
-    # This includes details like title, genres, ratings, etc.
-    anime_data = data_loader.load_json_file('final_anime_data.json')
 
     # Load the mapping of anime titles to their indices in the dataset
     # This is used for quick lookups when processing recommendations
@@ -55,12 +52,13 @@ class AnimeRecommender:
     Implements a hybrid recommendation approach combining multiple similarity metrics.
     """
     
-    def __init__(self):
-        """
-        Initialize the AnimeRecommender.
-        No initialization is needed as all data is loaded at module level.
-        """
-        pass
+    def __init__(self, anime_data=None):
+        """Initialize the recommender with pre-loaded data or load it if not provided."""
+        
+        if anime_data is not None:
+            # Use pre-loaded data
+            self.anime_data = anime_data
+            
         
     def get_recommendations(self, anime_title: str) -> List[Dict]:
         """
@@ -79,7 +77,7 @@ class AnimeRecommender:
                        Each dict contains the anime's details and similarity score
         """
         # Step 1: Get genre-based similarity
-        genre_sim = GenreJaccardSim(anime_data, anime_to_index)
+        genre_sim = GenreJaccardSim(self.anime_data, anime_to_index)
         genre_sim_output = genre_sim.get_similar_anime(anime_title)
         
         # Step 2: Refine using reviewer sentiment analysis
@@ -104,18 +102,18 @@ class AnimeRecommender:
             # Use TF-IDF results if available
             return tfidf_output
 
-# Example usage for testing
-if __name__ == "__main__":
-    # Initialize the recommender
-    recommender = AnimeRecommender()
-    anime_title = "Attack on Titan"
+# # Example usage for testing
+# if __name__ == "__main__":
+#     # Initialize the recommender
+#     recommender = AnimeRecommender()
+#     anime_title = "Attack on Titan"
     
-    # Get recommendations for the specified anime
-    recommendations = recommender.get_recommendations(anime_title)
+#     # Get recommendations for the specified anime
+#     recommendations = recommender.get_recommendations(anime_title)
     
-    # Print the top 10 recommendations with their similarity scores
-    print(f"\nTop 10 recommendations for {anime_title}:")
-    for i, rec in enumerate(recommendations[:10], 1):
-        print(f"\n{i}. {rec['Name']}")
-        print(f"   Similarity: {rec['similarity']:.3f}")
+#     # Print the top 10 recommendations with their similarity scores
+#     print(f"\nTop 10 recommendations for {anime_title}:")
+#     for i, rec in enumerate(recommendations[:10], 1):
+#         print(f"\n{i}. {rec['Name']}")
+#         print(f"   Similarity: {rec['similarity']:.3f}")
          
