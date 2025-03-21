@@ -20,3 +20,5 @@ helpers/*
 json_template/
 
 backend/4300-env/
+
+backend/data/*
