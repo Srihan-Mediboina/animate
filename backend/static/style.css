@@ -251,3 +251,11 @@ body {
 .anime-synopsis::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
+
+.search-description {
+    color: #666;
+    font-size: 1.1rem;
+    margin: 0.5rem 0 1.5rem 0;
+    font-family: 'Open Sans', sans-serif;
+    text-align: center;
+}
