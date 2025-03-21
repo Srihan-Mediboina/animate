@@ -15,34 +15,39 @@ from typing import List, Dict
 from .genre_jaccard_sim import GenreJaccardSim
 from .reviewer_sentiment import ReviewerSentiment
 from .tfidf import TFIDF
+from ..data_loader import DataLoader
 
-# Get the directory of the current script
-current_directory = os.path.dirname(os.path.abspath(__file__))
-backend_directory = os.path.dirname(current_directory)  # Only go up one level to get to backend
+# Initialize the data loader
+data_loader = DataLoader()
 
-# Load the main anime dataset containing all anime information
-# This includes details like title, genres, ratings, etc.
-with open(os.path.join(backend_directory, 'data/final_anime_data.json'), 'r') as f:
-    anime_data = json.load(f)
+# Load all required data
+try:
+    # Load the main anime dataset containing all anime information
+    # This includes details like title, genres, ratings, etc.
+    anime_data = data_loader.load_json_file('final_anime_data.json')
 
-# Load the mapping of anime titles to their indices in the dataset
-# This is used for quick lookups when processing recommendations
-with open(os.path.join(backend_directory, 'data/anime_to_index.json'), 'r') as f:
-    anime_to_index = json.load(f)
+    # Load the mapping of anime titles to their indices in the dataset
+    # This is used for quick lookups when processing recommendations
+    anime_to_index = data_loader.load_json_file('anime_to_index.json')
 
-# Load the reviewer-anime relationship data, which contains a map of anime id to
-# a list of id of reviewers who gave it a score of 9+
-# These mappings help in finding similar anime based on reviewer preferences
-with open(os.path.join(backend_directory, 'data/anime_to_reviewer.json'), 'r') as f:
-    anime_to_reviewer = json.load(f)
-        
-with open(os.path.join(backend_directory, 'data/reviewer_to_anime.json'), 'r') as f:
-    reviewer_to_anime = json.load(f)
+    # Load the reviewer-anime relationship data
+    # anime_to_reviewer contains a map of anime id to a list of ids of reviewers who gave it a score of 9+
+    # reviewer_to_anime contains a map of reviewer id to a list of anime ids they rated highly
+    # These mappings help in finding similar anime based on reviewer preferences
+    anime_to_reviewer = data_loader.load_json_file('anime_to_reviewer.json')
+    reviewer_to_anime = data_loader.load_json_file('reviewer_to_anime.json')
 
-# Load the mapping of indices to anime IDs
-# This helps in maintaining consistency between different data representations
-with open(os.path.join(backend_directory, 'data/index_to_anime_id.json'), 'r') as f:
-    index_to_anime_id = json.load(f)
+    # Load the mapping of indices to anime IDs
+    # This helps in maintaining consistency between different data representations
+    # and is used to convert between internal indices and MyAnimeList IDs
+    index_to_anime_id = data_loader.load_json_file('index_to_anime_id.json')
+except Exception as e:
+    print(f"Error loading data: {e}")
+    anime_data = []
+    anime_to_index = {}
+    anime_to_reviewer = {}
+    reviewer_to_anime = {}
+    index_to_anime_id = {}
 
 class AnimeRecommender:
     """

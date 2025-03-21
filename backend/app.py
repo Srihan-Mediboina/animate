@@ -3,18 +3,19 @@ import os
 from flask import Flask, render_template, request
 from flask_cors import CORS
 from .processing.main import AnimeRecommender
+from .data_loader import DataLoader
 
-# ROOT_PATH for linking with all your files. 
-# Feel free to use a config.py or settings.py with a global export variable
-os.environ['ROOT_PATH'] = os.path.abspath(os.path.join("..",os.curdir))
+# Initialize the data loader
+data_loader = DataLoader()
 
-# Get the directory of the current script
-current_directory = os.path.dirname(os.path.abspath(__file__))
-
-# Load anime names for autocomplete
-with open(os.path.join(current_directory, 'data/final_anime_data.json'), 'r') as f:
-    anime_data = json.load(f)
+# Load anime data
+try:
+    anime_data = data_loader.load_json_file('final_anime_data.json')
     anime_names = [anime['Name'] for anime in anime_data]
+except Exception as e:
+    print(f"Error loading data: {e}")
+    anime_data = []
+    anime_names = []
 
 app = Flask(__name__)
 CORS(app)
