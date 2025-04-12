@@ -58,11 +58,11 @@ class ReviewerSentiment:
         
         print("highly_rated_anime", len(highly_rated_anime))
         
-        final_ids = jaccard_set.intersection(highly_rated_anime)
-        print("final_ids", len(final_ids))
+        final_ids = jaccard_set.intersection(highly_rated_anime) - {query_anime_id}
         
-        final_results = [anime for anime in intermediate_results if int(anime["anime_id"])in final_ids]
-
+        
+        final_results = [anime for anime in intermediate_results if int(anime["anime_id"]) in final_ids]
+        final_results.append(intermediate_results[-1])  
         return final_results
 
 
