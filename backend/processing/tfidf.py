@@ -92,11 +92,15 @@ class TFIDF:
         np.ndarray
             Transformed synopses
         """
-        # Process synopses once
-        synopses = self.process_synopses()
-        
-        # Fit and transform in one step
-        return self.vectorizer.fit_transform(synopses)
+        try:
+            # Process synopses once
+            synopses = self.process_synopses()
+            
+            # Fit and transform in one step
+            return self.vectorizer.fit_transform(synopses)
+        except Exception as e:
+            print(f"Error in fit_transform_synopses: {e}")
+            return np.array([])
 
     def calculate_cosine_similarity_with_last_row(self, vectors: np.ndarray) -> Dict[int, float]:
         """Calculate cosine similarity between each row and the last row.
@@ -176,3 +180,5 @@ class TFIDF:
         except Exception as e:
             print(f"Error in process_recs: {e}")
             return []
+
+    
