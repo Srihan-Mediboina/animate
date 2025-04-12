@@ -23,7 +23,7 @@ class Svd:
         # Get TF-IDF matrix from TFIDF processor
         tfidf_matrix = self.tfidf.fit_transform_synopses()
         
-        # Perform SVD and sort singular values in descending order
+        # Perform SVD and sort singular values in descending orderd
         u, s, vt = svds(tfidf_matrix, k=self.n_components)
         sorted_idx = np.argsort(s)[::-1]
         u = u[:, sorted_idx]
