@@ -3,7 +3,7 @@ Main module for the Anime Recommendation System.
 This module implements a hybrid recommendation system that combines multiple approaches:
 1. Genre-based similarity using Jaccard similarity
 2. Reviewer sentiment analysis
-3. TF-IDF based content similarity
+3. SVD-based content similarity
 
 The system uses a pipeline approach where each step refines the recommendations
 from the previous step to provide more accurate and relevant suggestions.
@@ -14,7 +14,7 @@ import json
 from typing import List, Dict
 from .genre_jaccard_sim import GenreJaccardSim
 from .reviewer_sentiment import ReviewerSentiment
-from .tfidf import TFIDF
+from .svd import Svd
 
 # Get the directory of the current script
 current_directory = os.path.dirname(os.path.abspath(__file__))
@@ -64,7 +64,7 @@ class AnimeRecommender:
         The pipeline works as follows:
         1. First, get genre-based similarity using Jaccard similarity
         2. Then, refine these recommendations using reviewer sentiment analysis
-        3. Finally, apply TF-IDF based content similarity for the most relevant matches
+        3. Finally, apply SVD-based content similarity for the most relevant matches
         
         Args:
             anime_title (str): Title of the anime to get recommendations for
@@ -81,12 +81,12 @@ class AnimeRecommender:
         reviewer_sentiment = ReviewerSentiment(anime_to_reviewer, reviewer_to_anime, anime_to_index, index_to_anime_id)
         reviewer_sentiment_output = reviewer_sentiment.get_highly_rated_anime(anime_title, genre_sim_output)
         
-        # Step 3: Apply TF-IDF based content similarity
-        tfidf = TFIDF(reviewer_sentiment_output)
-        tfidf_output = tfidf.process_recs()
+        # Step 3: Apply SVD-based content similarity
+        svd_processor = Svd(reviewer_sentiment_output)
+        svd_output = svd_processor.process_recs()
         
-        # Fallback logic: If TF-IDF returns no results, use previous stage's results
-        if len(tfidf_output) == 0:
+        # Fallback logic: If SVD returns no results, use previous stage's results
+        if len(svd_output) == 0:
             if len(reviewer_sentiment_output) == 0:
                 # If no reviewer sentiment results, use genre similarity results
                 print("returning genre_sim_output")
@@ -96,8 +96,8 @@ class AnimeRecommender:
                 print("returning reviewer_sentiment_output sim", reviewer_sentiment_output[-1]['similarity'])
                 return reviewer_sentiment_output
         else:
-            # Use TF-IDF results if available
-            return tfidf_output
+            # Use SVD results if available
+            return svd_output
 
 # Example usage for testing
 if __name__ == "__main__":
