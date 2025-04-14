@@ -80,31 +80,40 @@ class AnimeRecommender:
         # Step 2: Refine using reviewer sentiment analysis
         reviewer_sentiment = ReviewerSentiment(anime_to_reviewer, reviewer_to_anime, anime_to_index, index_to_anime_id)
         reviewer_sentiment_output = reviewer_sentiment.get_highly_rated_anime(anime_title, genre_sim_output)
-        
+        print(f"cdfhgjvhbjnk: {len(reviewer_sentiment_output[:-1])}")
         # Step 3: Apply SVD-based content similarity
-        svd_processor = Svd(reviewer_sentiment_output, anime_title)
-        svd_output = svd_processor.process_recs()
         
         # Fallback logic: If SVD returns no results, use previous stage's results
-        if len(svd_output) == 0:
-            if len(reviewer_sentiment_output) == 0:
-                # If no reviewer sentiment results, use genre similarity results
-                print("returning genre_sim_output")
-                return sorted(genre_sim_output[:-1], key=lambda x: x['similarity'], reverse=True)
-            else:
-                # If we have reviewer sentiment results, use those
-                print("returning reviewer_sentiment_output sim", reviewer_sentiment_output[-1]['similarity'])
-                return reviewer_sentiment_output
+        
+        if len(reviewer_sentiment_output[:-1]) == 0:
+            try:
+                # Exclude last item which is the query anime itself
+                svd_input = genre_sim_output[:-1]  
+                print("FDJSKFLHDSKJFSDHJKLFSHDJKLF")
+                print(svd_input)
+                # Need at least 2 items for SVD to work
+                if len(svd_input) >= 2:
+                    svd_processor = Svd(svd_input, anime_title)
+                    return svd_processor.process_recs()
+                
+                return svd_input  # Return what we have if not enough for SVD
+                
+            except Exception as e:
+                print(f"SVD failed: {e}, returning genre results")
+                return sorted(svd_input, key=lambda x: x['similarity'], reverse=True)
         else:
             # Use SVD results if available
             print("returning svd_output sim")
+            svd_processor = Svd(reviewer_sentiment_output, anime_title)
+            svd_output = svd_processor.process_recs()
+        
             return svd_output
 
 # Example usage for testing
 if __name__ == "__main__":
     # Initialize the recommender
     recommender = AnimeRecommender()
-    anime_title = "Attack on Titan"
+    anime_title = "Solo Leveling"
     
     # Get recommendations for the specified anime
     recommendations = recommender.get_recommendations(anime_title)
