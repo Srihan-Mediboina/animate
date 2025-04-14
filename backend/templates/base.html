@@ -82,33 +82,36 @@
         }
 
         function searchAnime() {
-            if (!selectedAnime) {
-                alert("Please select an anime from the suggestions");
+    const searchInput = document.getElementById("filter-text-val").value.trim();
+    if (!searchInput) {
+        alert("Please enter an anime title.");
+        return;
+    }
+
+    document.getElementById("answer-box").innerHTML = "";
+
+    fetch("/recommendations?" + new URLSearchParams({ title: searchInput }).toString())
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.length === 0) {
+                document.getElementById("answer-box").innerHTML =
+                    "<p class='no-results'>No recommendations found. Try a different anime title.</p>";
                 return;
             }
+            console.log("datad", data);
+            data.forEach(anime => {
+                let tempDiv = document.createElement("div");
+                tempDiv.innerHTML = answerBoxTemplate(anime);
+                document.getElementById("answer-box").appendChild(tempDiv);
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById("answer-box").innerHTML =
+                "<p class='error-message'>An error occurred. Please try again.</p>";
+        });
+}
 
-            document.getElementById("answer-box").innerHTML = ""
-            fetch("/recommendations?" + new URLSearchParams({ title: selectedAnime }).toString())
-                .then((response) => response.json())
-                .then((data) => {
-                    if (data.length === 0) {
-                        document.getElementById("answer-box").innerHTML =
-                            "<p class='no-results'>No recommendations found. Try a different anime title.</p>"
-                        return
-                    }
-                    console.log("datad", data)
-                    data.forEach(anime => {
-                        let tempDiv = document.createElement("div")
-                        tempDiv.innerHTML = answerBoxTemplate(anime)
-                        document.getElementById("answer-box").appendChild(tempDiv)
-                    })
-                })
-                .catch(error => {
-                    console.error('Error:', error)
-                    document.getElementById("answer-box").innerHTML =
-                        "<p class='error-message'>An error occurred. Please try again.</p>"
-                });
-        }
 
         // Close suggestions when clicking outside
         document.addEventListener('click', function (event) {
