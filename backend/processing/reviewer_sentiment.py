@@ -13,7 +13,7 @@ class ReviewerSentiment:
         self.anime_to_index = anime_to_index
         self.index_to_anime_id = index_to_anime_id
     
-    def get_highly_rated_anime(self, anime_title: str, intermediate_results: List[Dict]) -> List[Dict]:
+    def get_highly_rated_anime(self, target_anime_data: Dict, intermediate_results: List[Dict]) -> List[Dict]:
         """
         Filter intermediate results to only include anime with high reviewer ratings (i.e 9+).
         
@@ -27,13 +27,9 @@ class ReviewerSentiment:
         if not intermediate_results:
             return []
         
-        # Get the index of the query anime
-        query_anime_index = self.anime_to_index.get(anime_title)
-        if query_anime_index is None:
-            return []
         
         # Get the id of the query anime
-        query_anime_id = self.index_to_anime_id.get(str(query_anime_index))
+        query_anime_id = int(target_anime_data['anime_id'])
         if query_anime_id is None:
             return []
         
@@ -44,25 +40,25 @@ class ReviewerSentiment:
         jaccard_set = set()
 
         for anime in intermediate_results:
-            anime_id = self.index_to_anime_id.get(str(self.anime_to_index.get(anime['Name'])))
+            anime_id = int(anime['anime_id'])
             if anime_id is not None:
                 jaccard_set.add(anime_id)
-        print("jaccard_set", len(jaccard_set))
+        #print("jaccard_set", jaccard_set)
         
         highly_rated_anime = set()
        
-        print("query_reviewers", len(query_reviewers))
+        #print("query_reviewers", len(query_reviewers))
         for reviewer in query_reviewers:
             reviewer_anime_ids = self.reviewer_to_anime.get(str(reviewer), [])
             highly_rated_anime.update(reviewer_anime_ids)
         
-        print("highly_rated_anime", len(highly_rated_anime))
+        #print("highly_rated_anime", highly_rated_anime)
         
         final_ids = jaccard_set.intersection(highly_rated_anime) - {query_anime_id}
         
         
         final_results = [anime for anime in intermediate_results if int(anime["anime_id"]) in final_ids]
-        final_results.append(intermediate_results[-1])  
+        
         return final_results
 
 

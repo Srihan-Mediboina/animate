@@ -31,6 +31,7 @@
         function answerBoxTemplate(anime) {
             const imageUrl = anime['Image URL'] || 'https://via.placeholder.com/200x300?text=No+Image';
             const cleanSynopsis = (anime.Synopsis || '').replace(/\\n/g, ' ').replace(/\\/g, '');
+
             return `
                 <div class='recommendation-card'>
                     <div class='anime-image'>
@@ -45,6 +46,7 @@
                         <p class='anime-age-rating'>Age Rating: ${anime.Rating || 'N/A'}</p>
                         <p class='anime-synopsis'>${cleanSynopsis || 'No synopsis available'}</p>
                         <p class='similarity-score'>Similarity Score: ${anime.similarity ? anime.similarity.toFixed(3) : 'N/A'}</p>
+                        ${sharedWordsText}
                     </div>
                 </div>`
         }

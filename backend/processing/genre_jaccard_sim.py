@@ -3,7 +3,6 @@ import numpy as np
 from typing import List, Dict, Set
 
 
-
 class GenreJaccardSim:
     def __init__(self, anime_data: List[Dict], anime_to_index: Dict[str, int]):
         """
@@ -49,28 +48,14 @@ class GenreJaccardSim:
         similar_animes = []
         
         for anime in self.anime_data:
-            if anime['Name'] == anime_title:
-                continue    
-            anime_genres = set(genre.strip() for genre in anime['Genres'].split(','))
-            similarity = self.jaccard_similarity(target_anime_genres, anime_genres)
-            
-            if similarity >= threshold:
-                anime['similarity'] = similarity
-                similar_animes.append(anime)
-        similar_animes.append(self.anime_data[target_idx])
-        return similar_animes
-
-# if __name__ == "__main__":
-#     # Create an instance of GenreJaccardSim
-#     genre_sim = GenreJaccardSim(anime_data, anime_to_index)
-    
-#     # Test with a sample anime title
-#     test_anime = "Vinland Saga"
-#     print(f"\nFinding similar anime to: {test_anime}")
-    
-#     # Get similar anime
-#     similar_animes = genre_sim.get_similar_anime(test_anime)
-    
-#     # Print results
-#     print(f"\nFound {len(similar_animes)} similar anime:")
-#     print(similar_animes[-1]['Name'])
+            if anime['Name'] != anime_title:  # Exclude the input anime title
+                anime_genres = set(genre.strip() for genre in anime['Genres'].split(','))
+                similarity = self.jaccard_similarity(target_anime_genres, anime_genres)
+                
+                if similarity >= threshold:
+                    # Make a copy of the anime data to avoid modifying the original
+                    anime_copy = anime.copy()
+                    anime_copy['similarity'] = similarity
+                    similar_animes.append(anime_copy)
+        
+        return (similar_animes, self.anime_data[target_idx])

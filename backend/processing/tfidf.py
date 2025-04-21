@@ -3,14 +3,16 @@ import numpy as np
 from typing import List, Dict
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+import copy
 
 class TFIDF:
-    def __init__(self, anime_data: List[Dict]):
+    def __init__(self, anime_data: List[Dict], target_anime_data: Dict):
         """
         Initialize the TFIDF class with necessary mapping files.
         
         """
-        self.anime_data = anime_data
+        self.anime_data = copy.deepcopy(anime_data)  # Deep copy to avoid modifying original data
+        self.anime_data.append(target_anime_data)
         # Initialize TF-IDF vectorizer
         self.vectorizer = self.build_vectorizer(
             max_features=4000,
@@ -181,4 +183,6 @@ class TFIDF:
             print(f"Error in process_recs: {e}")
             return []
 
-    
+    def get_feature_names_out(self):
+        """Expose the feature names (words) from the TfidfVectorizer."""
+        return self.vectorizer.get_feature_names_out()

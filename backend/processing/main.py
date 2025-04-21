@@ -75,25 +75,23 @@ class AnimeRecommender:
         """
         # Step 1: Get genre-based similarity
         genre_sim = GenreJaccardSim(anime_data, anime_to_index)
-        genre_sim_output = genre_sim.get_similar_anime(anime_title)
+        genre_sim_output, target_anime_data = genre_sim.get_similar_anime(anime_title)
         
         # Step 2: Refine using reviewer sentiment analysis
         reviewer_sentiment = ReviewerSentiment(anime_to_reviewer, reviewer_to_anime, anime_to_index, index_to_anime_id)
-        reviewer_sentiment_output = reviewer_sentiment.get_highly_rated_anime(anime_title, genre_sim_output)
-        print(f"cdfhgjvhbjnk: {len(reviewer_sentiment_output[:-1])}")
+        reviewer_sentiment_output = reviewer_sentiment.get_highly_rated_anime(target_anime_data, genre_sim_output)
+        
         # Step 3: Apply SVD-based content similarity
         
         # Fallback logic: If SVD returns no results, use previous stage's results
         
-        if len(reviewer_sentiment_output[:-1]) == 0:
+        if len(reviewer_sentiment_output) == 0:
             try:
                 # Exclude last item which is the query anime itself
-                svd_input = genre_sim_output[:-1]  
-                print("FDJSKFLHDSKJFSDHJKLFSHDJKLF")
-                print(svd_input)
+                svd_input = genre_sim_output 
                 # Need at least 2 items for SVD to work
                 if len(svd_input) >= 2:
-                    svd_processor = Svd(svd_input, anime_title)
+                    svd_processor = Svd(svd_input, target_anime_data)
                     return svd_processor.process_recs()
                 
                 return svd_input  # Return what we have if not enough for SVD
@@ -104,9 +102,16 @@ class AnimeRecommender:
         else:
             # Use SVD results if available
             print("returning svd_output sim")
-            svd_processor = Svd(reviewer_sentiment_output, anime_title)
+            svd_processor = Svd(reviewer_sentiment_output, target_anime_data)
             svd_output = svd_processor.process_recs()
-        
+            if len(svd_output) == 0:
+                # Sort by similarity first, then by Score in case of ties
+                # Convert 'UNKNOWN' to 0 for sorting purposes
+                reviewer_sentiment_output.sort(key=lambda x: (
+                    -x['similarity'], 
+                    -float(x.get('Score', 0) if x.get('Score') != 'UNKNOWN' else 0)
+                ))
+                return reviewer_sentiment_output
             return svd_output
 
 # Example usage for testing

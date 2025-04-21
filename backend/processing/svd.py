@@ -5,7 +5,7 @@ import numpy as np
 from .tfidf import TFIDF
 
 class Svd:
-    def __init__(self, anime_data: List[Dict], query_anime: str, n_components: int = 60):
+    def __init__(self, anime_data: List[Dict], target_anime_data: Dict, n_components: int = 60):
         """
         Initialize the SVD class with anime data and SVD parameters.
         
@@ -17,21 +17,19 @@ class Svd:
         try:
         
             self.anime_data = anime_data
-            self.query_anime = query_anime
+            self.target_anime = target_anime_data
             self.n_components = n_components
-            self.tfidf = TFIDF(anime_data)
-            self.reduced_vectors = self._perform_svd()
-            self.query_idx = self._find_query_index()
+            self.tfidf = TFIDF(anime_data, target_anime_data)
         except Exception as e:
             print(f"Error in SVD initialization: {e}")
             raise
 
-    def _find_query_index(self) -> int:
-        """Find the index of the query anime in the data."""
-        for i, anime in enumerate(self.anime_data):
-            if anime['Name'].lower() == self.query_anime.lower():
-                return i
-        raise ValueError(f"Anime '{self.query_anime}' not found in data")
+    # def _find_query_index(self) -> int:
+    #     """Find the index of the query anime in the data."""
+    #     for i, anime in enumerate(self.anime_data):
+    #         if anime['Name'].lower() == self.query_anime.lower():
+    #             return i
+    #     raise ValueError(f"Anime '{self.query_anime}' not found in data")
 
     def _perform_svd(self) -> np.ndarray:
         """Perform SVD on TF-IDF matrix and return reduced vectors."""
@@ -43,6 +41,7 @@ class Svd:
             min_dim = min(tfidf_matrix.shape)
             if min_dim <= 1:
                 raise ValueError(f"Matrix too small for SVD. Shape: {tfidf_matrix.shape}")
+                return []
                 
             # Ensure n_components is valid
             if self.n_components >= min_dim:
@@ -64,13 +63,12 @@ class Svd:
     def calculate_cosine_similarity_with_query(self) -> Dict[int, float]:
         """Calculate cosine similarity between each row and the query anime in reduced space."""
         try:
-            reference_vector = self.reduced_vectors[self.query_idx]
+            reduced_vectors = self._perform_svd()
+            reference_vector = reduced_vectors[-1]
             similarities = {}
             
-            for i in range(len(self.reduced_vectors)):
-                if i == self.query_idx:
-                    continue  # Skip the query anime itself
-                current_vector = self.reduced_vectors[i]
+            for i in range(len(reduced_vectors)-1):
+                current_vector = reduced_vectors[i]
                 dot_product = np.dot(current_vector, reference_vector)
                 norm_current = np.linalg.norm(current_vector)
                 norm_reference = np.linalg.norm(reference_vector)
