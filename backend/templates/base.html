@@ -109,10 +109,10 @@ Example: 'A psychological thriller about virtual reality gaming'"
                 params.append('title', selectedAnime);
             } else {
                 const description = document.getElementById('description-text-val').value;
-                // if (description.length < 20) {
-                //     alert("Please enter at least 20 characters");
-                //     return;
-                // }
+                if (description.length < 20) {
+                    alert("Please enter at least 20 characters");
+                    return;
+                }
                 params.append('description', description);
             }
 

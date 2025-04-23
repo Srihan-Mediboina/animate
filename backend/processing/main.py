@@ -52,7 +52,10 @@ class AnimeRecommender:
     Implements a hybrid recommendation approach combining multiple similarity metrics.
     """
     
-    def __init__(self, anime_data_path='../data/final_anime_data.json'):
+    def __init__(self):
+        self.genre_keywords = set()
+        for anime in anime_data:
+            self.genre_keywords.add(anime["Genres"])
         pass
          
     
@@ -89,24 +92,39 @@ class AnimeRecommender:
     
 
     def get_recommendations_from_description(self, description: str) -> List[Dict]:
-        """
-        Direct SVD-based recommendations from description
-        Bypasses genre and sentiment steps
-        """
-        # Create temporary anime entry
+        """Hybrid approach using genre extraction + SVD"""
+        # Extract genres from description
+        found_genres = self._extract_genres_from_description(description)
+        
+        if found_genres:
+            # If genres found, use genre similarity first
+            print(f"Using extracted genres: {found_genres}")
+            genre_sim = GenreJaccardSim(self.anime_data, self.anime_to_index)
+            genre_results = genre_sim.get_similar_anime_by_genres(found_genres)
+            
+            if not genre_results:
+                return []
+            
+            # Apply SVD on genre results
+            svd_processor = Svd(genre_results)
+            return svd_processor.process_recs()
+        
+        # Fallback to direct SVD if no genres found
+        print("No genres detected, using pure SVD")
         temp_anime = {
             "Name": "[QUERY]",
             "Synopsis": description,
             "anime_id": -1
         }
-        
-        # Create modified dataset with temp entry
         modified_data = anime_data.copy()
         modified_data.append(temp_anime)
-        
-        # Process directly with SVD
         svd_processor = Svd(modified_data, temp_anime['Name'])
-        return svd_processor.process_recs()
+        return [a for a in svd_processor.process_recs() if a['anime_id'] != -1]
+
+    def _extract_genres_from_description(self, description: str) -> List[str]:
+        """Extract genre keywords from description text"""
+        description = description.lower()
+        return [genre for genre in self.genre_keywords if genre in description]
 
 # Example usage for testing
 if __name__ == "__main__":
