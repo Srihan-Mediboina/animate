@@ -1,8 +1,9 @@
 import json
 import os
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 from .processing.main import AnimeRecommender
+from .processing.adhoc import AdHoc
 
 # ROOT_PATH for linking with all your files. 
 # Feel free to use a config.py or settings.py with a global export variable
@@ -44,6 +45,34 @@ def get_recommendations():
     
     recommendations = recommender.get_recommendations(anime_title)
     return json.dumps(recommendations)
+
+@app.route('/filtered_recommendations', methods=['POST'])
+def filtered_recommendations():
+    try:
+        data = request.get_json()
+        genres = data.get('genres', [])
+        episodes = data.get('episodes', [])
+        studios = data.get('studios', [])
+        ratings = data.get('ratings', [])
+        description = data.get('description', '')
+
+        # Initialize AdHoc with anime data
+        adhoc = AdHoc(anime_data)
+        
+        # Get recommendations
+        recommendations = adhoc.get_recommendations(
+            genres=genres,
+            episodes=episodes,
+            studios=studios,
+            ratings=ratings,
+            description=description,
+            
+        )
+        
+        return jsonify(recommendations)
+    except Exception as e:
+        print(f"Error in filtered_recommendations: {str(e)}")
+        return jsonify([]), 500
 
 if 'DB_NAME' not in os.environ:
     app.run(debug=True, host="0.0.0.0", port=5001)
