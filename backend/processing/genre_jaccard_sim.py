@@ -44,15 +44,23 @@ class GenreJaccardSim:
             return []
         
         target_idx = self.anime_to_index[anime_title]
-        target_anime_genres = set(genre.strip() for genre in self.anime_data[target_idx]['Genres'].split(','))
+        target_anime_genres = set(
+            genre.strip().lower()  # Add .lower() for case insensitivity
+            for genre in self.anime_data[target_idx]['Genres']  # Directly iterate list
+        )
         
         similar_animes = []
         
-        for anime in self.anime_data:
-            if anime['Name'] == anime_title:
-                continue    
-            anime_genres = set(genre.strip() for genre in anime['Genres'].split(','))
-            similarity = self.jaccard_similarity(target_anime_genres, anime_genres)
+        for idx, anime in enumerate(self.anime_data):
+            if idx == target_idx:
+                continue
+            
+            compare_genres = set(
+                g.strip().lower() 
+                for g in anime['Genres']  # Directly iterate list
+            )
+            
+            similarity = self.jaccard_similarity(target_anime_genres, compare_genres)
             
             if similarity >= threshold:
                 anime['similarity'] = similarity
@@ -62,7 +70,7 @@ class GenreJaccardSim:
 
 # if __name__ == "__main__":
 #     # Create an instance of GenreJaccardSim
-#     genre_sim = GenreJaccardSim(anime_data, anime_to_index)
+#     # genre_sim = GenreJaccardSim(anime_data, anime_to_index)
     
 #     # Test with a sample anime title
 #     test_anime = "Vinland Saga"

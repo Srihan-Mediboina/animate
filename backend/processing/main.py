@@ -12,9 +12,11 @@ from the previous step to provide more accurate and relevant suggestions.
 import os
 import json
 from typing import List, Dict
-from .genre_jaccard_sim import GenreJaccardSim
-from .reviewer_sentiment import ReviewerSentiment
-from .svd import Svd
+from genre_jaccard_sim import GenreJaccardSim
+from reviewer_sentiment import ReviewerSentiment
+from collections import defaultdict
+from sklearn.feature_extraction.text import TfidfVectorizer
+from svd import Svd
 
 # Get the directory of the current script
 current_directory = os.path.dirname(os.path.abspath(__file__))
@@ -50,73 +52,96 @@ class AnimeRecommender:
     Implements a hybrid recommendation approach combining multiple similarity metrics.
     """
     
-    def __init__(self):
-        """
-        Initialize the AnimeRecommender.
-        No initialization is needed as all data is loaded at module level.
-        """
-        pass
+    def __init__(self, anime_data_path='../data/final_anime_data.json'):
+        # Get absolute path to data file
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        data_path = os.path.abspath(os.path.join(current_dir, anime_data_path))
         
+        # Verify file exists before loading
+        if not os.path.exists(data_path):
+            raise FileNotFoundError(f"Anime data file not found at: {data_path}")
+            
+        print(f"Loading anime data from: {data_path}")  # Debug confirmation
+        
+        try:
+            with open(data_path, 'r') as f:
+                self.anime_data = json.load(f)
+            with open('../data/anime_to_index.json', 'r') as r:
+                self.anime_to_index = json.load(r)
+            print(f"Successfully loaded {len(self.anime_data)} anime records")
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON in data file: {e}") from None
+            
+        # Verify data structure
+        if not all(key in self.anime_data[0] for key in ['anime_id', 'Name', 'Genres']):
+            raise ValueError("Loaded data is missing required fields")
+            
+    
+    
     def get_recommendations(self, anime_title: str) -> List[Dict]:
         """
-        Get anime recommendations using a multi-stage pipeline approach.
-        
-        The pipeline works as follows:
+        Get anime recommendations using a two-stage pipeline:
         1. First, get genre-based similarity using Jaccard similarity
-        2. Then, refine these recommendations using reviewer sentiment analysis
-        3. Finally, apply SVD-based content similarity for the most relevant matches
-        
-        Args:
-            anime_title (str): Title of the anime to get recommendations for
-            
-        Returns:
-            List[Dict]: List of recommended anime with their scores, sorted by similarity
-                       Each dict contains the anime's details and similarity score
+        2. Then apply SVD-based content similarity
         """
         # Step 1: Get genre-based similarity
-        genre_sim = GenreJaccardSim(anime_data, anime_to_index)
+        genre_sim = GenreJaccardSim(self.anime_data, self.anime_to_index)
         genre_sim_output = genre_sim.get_similar_anime(anime_title)
         
-        # Step 2: Refine using reviewer sentiment analysis
-        reviewer_sentiment = ReviewerSentiment(anime_to_reviewer, reviewer_to_anime, anime_to_index, index_to_anime_id)
-        reviewer_sentiment_output = reviewer_sentiment.get_highly_rated_anime(anime_title, genre_sim_output)
-        print(f"cdfhgjvhbjnk: {len(reviewer_sentiment_output[:-1])}")
-        # Step 3: Apply SVD-based content similarity
+        # Early exit if no genre results
+        if not genre_sim_output:
+            return []
+
+        # Step 2: Apply SVD directly on genre results
+        try:
+            # Exclude last item which is the query anime itself
+            svd_input = genre_sim_output[:-1]  
+            
+            # Need at least 2 items for SVD to work
+            if len(svd_input) >= 2:
+                svd_processor = Svd(svd_input)
+                return svd_processor.process_recs()
+            
+            return svd_input  # Return what we have if not enough for SVD
+            
+        except Exception as e:
+            print(f"SVD failed: {e}, returning genre results")
+            return sorted(svd_input, key=lambda x: x['similarity'], reverse=True)
         
-        # Fallback logic: If SVD returns no results, use previous stage's results
+    
+
+    def get_recommendations_from_description(self, description: str) -> List[Dict]:
+        """
+        Direct SVD-based recommendations from description
+        Bypasses genre and sentiment steps
+        """
+        # Create temporary anime entry
+        temp_anime = {
+            "Name": "[QUERY]",
+            "Synopsis": description,
+            "anime_id": -1
+        }
         
-        if len(reviewer_sentiment_output[:-1]) == 0:
-            try:
-                # Exclude last item which is the query anime itself
-                svd_input = genre_sim_output[:-1]  
-                print("FDJSKFLHDSKJFSDHJKLFSHDJKLF")
-                print(svd_input)
-                # Need at least 2 items for SVD to work
-                if len(svd_input) >= 2:
-                    svd_processor = Svd(svd_input, anime_title)
-                    return svd_processor.process_recs()
-                
-                return svd_input  # Return what we have if not enough for SVD
-                
-            except Exception as e:
-                print(f"SVD failed: {e}, returning genre results")
-                return sorted(svd_input, key=lambda x: x['similarity'], reverse=True)
-        else:
-            # Use SVD results if available
-            print("returning svd_output sim")
-            svd_processor = Svd(reviewer_sentiment_output, anime_title)
-            svd_output = svd_processor.process_recs()
+        # Create modified dataset with temp entry
+        modified_data = self.anime_data.copy()
+        modified_data.append(temp_anime)
         
-            return svd_output
+        # Process directly with SVD
+        svd_processor = Svd(modified_data, temp_anime['Name'])
+        return svd_processor.process_recs()
 
 # Example usage for testing
 if __name__ == "__main__":
+
     # Initialize the recommender
     recommender = AnimeRecommender()
     anime_title = "Solo Leveling"
+    anime_descr = "dark fantasy with funny vibes"
     
     # Get recommendations for the specified anime
-    recommendations = recommender.get_recommendations(anime_title)
+    # recommendations = recommender.get_recommendations(anime_title)
+    recommendations = recommender.get_recommendations_from_description(anime_descr)
+    print(len(recommendations))
     
     # Print the top 10 recommendations with their similarity scores
     print(f"\nTop 10 recommendations for {anime_title}:")

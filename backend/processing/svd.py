@@ -2,7 +2,7 @@ import json
 from typing import List, Dict
 from scipy.sparse.linalg import svds
 import numpy as np
-from .tfidf import TFIDF
+from tfidf import TFIDF
 
 class Svd:
     def __init__(self, anime_data: List[Dict], query_anime: str, n_components: int = 60):
