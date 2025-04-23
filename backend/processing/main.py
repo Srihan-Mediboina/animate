@@ -12,11 +12,11 @@ from the previous step to provide more accurate and relevant suggestions.
 import os
 import json
 from typing import List, Dict
-from genre_jaccard_sim import GenreJaccardSim
-from reviewer_sentiment import ReviewerSentiment
+from .genre_jaccard_sim import GenreJaccardSim
+from .reviewer_sentiment import ReviewerSentiment
 from collections import defaultdict
 from sklearn.feature_extraction.text import TfidfVectorizer
-from svd import Svd
+from .svd import Svd
 
 # Get the directory of the current script
 current_directory = os.path.dirname(os.path.abspath(__file__))
@@ -53,30 +53,8 @@ class AnimeRecommender:
     """
     
     def __init__(self, anime_data_path='../data/final_anime_data.json'):
-        # Get absolute path to data file
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        data_path = os.path.abspath(os.path.join(current_dir, anime_data_path))
-        
-        # Verify file exists before loading
-        if not os.path.exists(data_path):
-            raise FileNotFoundError(f"Anime data file not found at: {data_path}")
-            
-        print(f"Loading anime data from: {data_path}")  # Debug confirmation
-        
-        try:
-            with open(data_path, 'r') as f:
-                self.anime_data = json.load(f)
-            with open('../data/anime_to_index.json', 'r') as r:
-                self.anime_to_index = json.load(r)
-            print(f"Successfully loaded {len(self.anime_data)} anime records")
-        except json.JSONDecodeError as e:
-            raise ValueError(f"Invalid JSON in data file: {e}") from None
-            
-        # Verify data structure
-        if not all(key in self.anime_data[0] for key in ['anime_id', 'Name', 'Genres']):
-            raise ValueError("Loaded data is missing required fields")
-            
-    
+        pass
+         
     
     def get_recommendations(self, anime_title: str) -> List[Dict]:
         """
@@ -85,7 +63,7 @@ class AnimeRecommender:
         2. Then apply SVD-based content similarity
         """
         # Step 1: Get genre-based similarity
-        genre_sim = GenreJaccardSim(self.anime_data, self.anime_to_index)
+        genre_sim = GenreJaccardSim(anime_data, anime_to_index)
         genre_sim_output = genre_sim.get_similar_anime(anime_title)
         
         # Early exit if no genre results
@@ -123,7 +101,7 @@ class AnimeRecommender:
         }
         
         # Create modified dataset with temp entry
-        modified_data = self.anime_data.copy()
+        modified_data = anime_data.copy()
         modified_data.append(temp_anime)
         
         # Process directly with SVD

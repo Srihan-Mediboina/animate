@@ -39,10 +39,15 @@ def get_suggestions():
 @app.route("/recommendations")
 def get_recommendations():
     anime_title = request.args.get("title")
-    if not anime_title:
-        return json.dumps([])
+    anime_desc = request.args.get("description")
     
-    recommendations = recommender.get_recommendations(anime_title)
+    if anime_title:
+        recommendations = recommender.get_recommendations(anime_title)
+    elif anime_desc:
+        recommendations = recommender.get_recommendations_from_description(anime_desc)
+    else:
+        return json.dumps([])
+        
     return json.dumps(recommendations)
 
 if 'DB_NAME' not in os.environ:

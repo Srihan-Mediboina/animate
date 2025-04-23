@@ -11,12 +11,29 @@
         <div class="top-text">
             <h1 class="title">AniMate</h1>
             <p class="search-description">Discover anime recommendations based on your favorite shows</p>
+            <div class="search-toggle">
+                <button class="toggle-btn active" id="title-toggle" onclick="toggleSearchMode('title')">
+                    Search by Title
+                </button>
+                <button class="toggle-btn" id="description-toggle" onclick="toggleSearchMode('description')">
+                    Search by Description
+                </button>
+            </div>
             <div class="search-container">
-                <div class="input-box" onclick="sendFocus()">
+                <!-- Title Search -->
+                <div class="input-box active" id="title-search" onclick="sendFocus()">
                     <img src="{{ url_for('static', filename='images/mag.png') }}" />
-                    <input placeholder="Enter an anime title" id="filter-text-val" onkeyup="filterText()"
-                        autocomplete="off">
+                    <input placeholder="Enter an anime title" id="filter-text-val" 
+                           onkeyup="filterText()" autocomplete="off">
                 </div>
+
+                <!-- Description Search -->
+                <div class="input-box" id="description-search">
+                    <textarea placeholder="Describe what you're looking for...
+Example: 'A psychological thriller about virtual reality gaming'" 
+                           id="description-text-val" rows="3"></textarea>
+                </div>
+
                 <div id="suggestions-box" class="suggestions-box"></div>
                 <button id="search-button" class="search-button" onclick="searchAnime()">Search</button>
             </div>
@@ -82,31 +99,37 @@
         }
 
         function searchAnime() {
-            if (!selectedAnime) {
-                alert("Please select an anime from the suggestions");
-                return;
+            const params = new URLSearchParams();
+            
+            if(currentSearchMode === 'title') {
+                if (!selectedAnime) {
+                    alert("Please select an anime from the suggestions");
+                    return;
+                }
+                params.append('title', selectedAnime);
+            } else {
+                const description = document.getElementById('description-text-val').value;
+                // if (description.length < 20) {
+                //     alert("Please enter at least 20 characters");
+                //     return;
+                // }
+                params.append('description', description);
             }
 
-            document.getElementById("answer-box").innerHTML = ""
-            fetch("/recommendations?" + new URLSearchParams({ title: selectedAnime }).toString())
-                .then((response) => response.json())
-                .then((data) => {
-                    if (data.length === 0) {
-                        document.getElementById("answer-box").innerHTML =
-                            "<p class='no-results'>No recommendations found. Try a different anime title.</p>"
-                        return
-                    }
-                    console.log("datad", data)
+            fetch("/recommendations?" + params.toString())
+                .then(response => response.json())
+                .then(data => {
+                    const answerBox = document.getElementById('answer-box');
+                    answerBox.innerHTML = "";
                     data.forEach(anime => {
-                        let tempDiv = document.createElement("div")
-                        tempDiv.innerHTML = answerBoxTemplate(anime)
-                        document.getElementById("answer-box").appendChild(tempDiv)
-                    })
+                        let tempDiv = document.createElement("div");
+                        tempDiv.innerHTML = answerBoxTemplate(anime);
+                        answerBox.appendChild(tempDiv);
+                    });
                 })
                 .catch(error => {
-                    console.error('Error:', error)
-                    document.getElementById("answer-box").innerHTML =
-                        "<p class='error-message'>An error occurred. Please try again.</p>"
+                    console.error('Error:', error);
+                    answerBox.innerHTML = "<p class='error-message'>An error occurred. Please try again.</p>";
                 });
         }
 
@@ -118,6 +141,36 @@
                 suggestionsBox.innerHTML = ""
             }
         });
+
+
+
+
+
+        let currentSearchMode = 'title';
+
+        function toggleSearchMode(mode) {
+            if (currentSearchMode === mode) return;
+            
+            currentSearchMode = mode;
+            
+            // Update toggle buttons
+            document.querySelectorAll('.toggle-btn').forEach(btn => 
+                btn.classList.toggle('active', btn.id === `${mode}-toggle`)
+            );
+            
+            // Toggle input visibility
+            document.getElementById('title-search').classList.toggle('active', mode === 'title');
+            document.getElementById('description-search').classList.toggle('active', mode === 'description');
+            
+            // Clear inputs when switching
+            if(mode === 'title') {
+                document.getElementById('description-text-val').value = '';
+            } else {
+                document.getElementById('filter-text-val').value = '';
+                document.getElementById('suggestions-box').innerHTML = '';
+                selectedAnime = null;
+            }
+        }
     </script>
 </body>
 
