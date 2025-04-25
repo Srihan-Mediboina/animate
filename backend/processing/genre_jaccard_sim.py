@@ -27,7 +27,7 @@ class GenreJaccardSim:
         union = len(set1.union(set2))
         return intersection / union if union > 0 else 0
     
-    def get_similar_anime(self, anime_title: str, threshold: float = 0.4) -> List[Dict]:
+    def get_similar_anime(self, anime_title: str, threshold: float = 0.2) -> List[Dict]:
         """
         Get anime with high genre similarity to the input anime.
         

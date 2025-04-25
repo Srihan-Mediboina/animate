@@ -5,7 +5,7 @@ import numpy as np
 from .tfidf import TFIDF
 
 class Svd:
-    def __init__(self, anime_data: List[Dict], target_anime_data: Dict, n_components: int = 100):
+    def __init__(self, anime_data: List[Dict], target_anime_data: Dict, n_components: int = 60):
         """
         Initialize the SVD class with anime data and SVD parameters.
         
