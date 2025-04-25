@@ -123,12 +123,12 @@ class AdHoc:
       studios = studios or []
       ratings = ratings or []
       
-      print(f"\nProcessing filters:")
-      print(f"Genres: {genres}")
-      print(f"Episodes: {episodes}")
-      print(f"Studios: {studios}")
-      print(f"Ratings: {ratings}")
-      print(f"Description: {description}\n")
+    #   print(f"\nProcessing filters:")
+    #   print(f"Genres: {genres}")
+    #   print(f"Episodes: {episodes}")
+    #   print(f"Studios: {studios}")
+    #   print(f"Ratings: {ratings}")
+    #   print(f"Description: {description}\n")
       
       # First pass: Filter and score based on criteria
       filtered_anime = []
@@ -171,7 +171,7 @@ class AdHoc:
       for anime in svd_recommendations:
           
               # Combine scores: 70% SVD similarity, 30% filter match
-            anime['similarity'] = max(0.7 * anime['similarity'] + 0.3 * anime['filter_score'], anime['similarity'])
+            anime['similarity'] = max(0.55 * anime['similarity'] + 0.45 * anime['filter_score'], anime['similarity'])
       
       print("Returning combined SVD and filter recommendations")
       return sorted(svd_recommendations, key=lambda x: x['similarity'], reverse=True)
