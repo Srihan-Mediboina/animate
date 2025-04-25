@@ -372,7 +372,7 @@
                         <p class='anime-studios'>Studios: ${anime.Studios || 'N/A'}</p>
                         <p class='anime-age-rating'>Age Rating: ${anime.Rating || 'N/A'}</p>
                         <p class='anime-synopsis'>${cleanSynopsis || 'No synopsis available'}</p>
-                        <p class='similarity-score'>Similarity Score: ${anime.similarity ? anime.similarity.toFixed(3) : 'N/A'}</p>
+                        <p class='similarity-score'>Similarity Score: ${anime.similarity ? (anime.similarity * 100).toFixed(0) + '%' : anime.filter_score ? (anime.filter_score * 100).toFixed(0) + '%.' : 'N/A'} ${anime.top_words ? anime.top_words : ''}</p>
                         
                     </div>
                 </div>`

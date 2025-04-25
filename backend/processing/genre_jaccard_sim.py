@@ -27,7 +27,7 @@ class GenreJaccardSim:
         union = len(set1.union(set2))
         return intersection / union if union > 0 else 0
     
-    def get_similar_anime(self, anime_title: str, threshold: float = 0.45) -> List[Dict]:
+    def get_similar_anime(self, anime_title: str, threshold: float = 0.4) -> List[Dict]:
         """
         Get anime with high genre similarity to the input anime.
         
@@ -39,7 +39,6 @@ class GenreJaccardSim:
             List[Dict]: List of similar anime with their similarity scores
         """
         if anime_title not in self.anime_to_index:
-            print(f"Anime '{anime_title}' not found in index")
             return []
         
         target_idx = self.anime_to_index[anime_title]

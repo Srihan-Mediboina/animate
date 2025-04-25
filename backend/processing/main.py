@@ -115,17 +115,5 @@ class AnimeRecommender:
             return svd_output
 
 # Example usage for testing
-if __name__ == "__main__":
-    # Initialize the recommender
-    recommender = AnimeRecommender()
-    anime_title = "Solo Leveling"
-    
-    # Get recommendations for the specified anime
-    recommendations = recommender.get_recommendations(anime_title)
-    
-    # Print the top 10 recommendations with their similarity scores
-    print(f"\nTop 10 recommendations for {anime_title}:")
-    for i, rec in enumerate(recommendations[:10], 1):
-        print(f"\n{i}. {rec['Name']}")
-        print(f"   Similarity: {rec['similarity']:.3f}")
+
          
