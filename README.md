@@ -2,7 +2,7 @@
 
 **AniMate** is an intelligent anime recommendation system designed for fans who want to discover new shows based on **themes, narrative content, and audience sentiment**—not just genres. Input an anime title or a free-form description, and AniMate returns a curated list of similar shows with explanations for each match.
 
-🔗 **Try the Final Prototype** *(link placeholder)*
+🔗 **Try the Final Prototype** *[(http://4300showcase.infosci.cornell.edu:5232/)]*
 
 ## 🧠 How It Works
 AniMate combines techniques from **Information Retrieval, Text Mining, and Social Recommendation Systems** to deliver personalized recommendations:
